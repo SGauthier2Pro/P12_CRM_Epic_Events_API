@@ -11,19 +11,25 @@ from .userbaseserializer import UserBaseSerializer
 
 
 class UserDetailSerializer(UserBaseSerializer):
+
     class Meta:
         model = User
         fields = [
             'id',
+            'username',
             'first_name',
             'last_name',
             'email',
-            'is_staff',
-            'is_superuser',
-            'date_created',
-            'date_updated',
             'password',
-            'group',
+            'groups',
+            'assigned_customers',
+            'assigned_contracts',
+            'assigned_events'
+        ]
+        read_only_fields = [
+            'id',
+            'username',
+            'groups',
             'assigned_customers',
             'assigned_contracts',
             'assigned_events'

@@ -14,5 +14,5 @@ from ..serializers.mytokenobtainpairserializer import \
 
 
 class MyObtainTokenPairView(TokenObtainPairView):
-    permission_classes = (IsAuthenticated,)
+    #permission_classes = (IsAuthenticated,)
     serializer_class = MyTokenObtainPairSerializer

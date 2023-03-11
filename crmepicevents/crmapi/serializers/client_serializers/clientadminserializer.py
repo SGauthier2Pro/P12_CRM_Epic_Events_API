@@ -1,40 +1,36 @@
-"""
-serializer class for Client model
-return the entire details of a Client
-    @get_sales_contact : included sales contact details
-@author : Sylvain GAUTHIER
-@version : 1.0
-"""
-
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from rest_framework import serializers
 
-from ...authentication.serializers.userlistserializer import UserListSerializer
-from .contractlistserializer import ContractListSerializer
-from ..models.client import Client
+from .clientbaseserializer import ClientBaseSerializer
+from crmapi.serializers.contract_serializers.contractlistserializer import \
+    ContractListSerializer
+from authentication.serializers.userlistserializer import UserListSerializer
+from crmapi.models.client import Client
 
 
-class ClientDetailSerializer(ModelSerializer):
+class CustomerAdminSerializer(ClientBaseSerializer):
     id = serializers.ReadOnlyField()
 
-    sales_contact = SerializerMethodField()
-    contracts = SerializerMethodField()
+    sales_contact = serializers.SerializerMethodField()
+    contracts = serializers.SerializerMethodField()
 
     class Meta:
         model = Client
-        fields = [
+        fields = (
             'id',
+            'readable_sales_contact',
+            'sales_contact',
             'first_name',
             'last_name',
             'email',
-            'phone',
-            'mobile',
+            'phone_number',
+            'mobile_number',
             'company_name',
             'date_created',
             'date_updated',
-            'sales_contact',
+            'group',
+            'events',
             'contracts'
-        ]
+        )
 
     def get_sales_contact(self, instance):
         queryset = instance.sales_contact.all()

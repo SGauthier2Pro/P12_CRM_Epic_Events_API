@@ -8,10 +8,12 @@ serializer class for Contract model
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 
-from ..models.contract import Contract
+from .contractbaseserializer import ContractBaseSerializer
+
+from crmapi.models.contract import Contract
 
 
-class ContractListSerializer(ModelSerializer):
+class ContractListSerializer(ContractBaseSerializer):
     id = serializers.ReadOnlyField()
 
     class Meta:
@@ -22,7 +24,7 @@ class ContractListSerializer(ModelSerializer):
             'date_created',
             'date_updated',
             'status',
-            'event_id',
+            'event',
             'amount',
             'payment_due'
         ]

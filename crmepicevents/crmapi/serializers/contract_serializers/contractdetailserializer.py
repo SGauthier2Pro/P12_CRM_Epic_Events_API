@@ -5,16 +5,20 @@ serializer details class for Contract model
 @version : 1.0
 """
 
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework.serializers import SerializerMethodField
 from rest_framework import serializers
 
-from .eventlistserializer import EventListSerializer
-from .clientlistserializer import ClientListSerializer
+from .contractbaseserializer import ContractBaseSerializer
+from crmapi.serializers.event_serializers.eventlistserializer import EventListSerializer
+from crmapi.serializers.client_serializers.clientlistserializer import \
+    ClientListSerializer
 
-from ..models.contract import Contract
+from crmapi.models.contract import Contract
+from crmapi.models.client import Client
+from crmapi.models.event import Event
 
 
-class ContractDetailSerializer(ModelSerializer):
+class ContractDetailSerializer(ContractBaseSerializer):
     id = serializers.ReadOnlyField()
     event = SerializerMethodField()
     client = SerializerMethodField()
@@ -34,11 +38,11 @@ class ContractDetailSerializer(ModelSerializer):
 
     def get_event(self, instance):
         if instance.event:
-            queryset = instance.event.all()
+            queryset = Event.objects.filter(pk=instance.id)
             serializer = EventListSerializer(queryset, many=True)
             return serializer.data
 
     def get_client(self, instance):
-        queryset = instance.client.all()
+        queryset = Client.objects.filter(pk=instance.id)
         serializer = ClientListSerializer(queryset, many=True)
         return serializer.data

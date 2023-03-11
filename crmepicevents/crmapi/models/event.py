@@ -18,15 +18,40 @@ class Event(models.Model):
         TERMINATED = 3
         CANCELLED = 4
 
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField()
+    date_created = models.DateTimeField(
+        verbose_name='Date created',
+        auto_now_add=True
+    )
+    date_updated = models.DateTimeField(
+        verbose_name='Date last update',
+        auto_now=True
+    )
 
-    support_contact = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                        on_delete=models.CASCADE)
-    event_status = models.IntegerField(verbose_name="Event status",
-                                       choices=EventStatus.choices,
-                                       default=EventStatus.IN_DEVELOPMENT)
-    attendees = models.IntegerField()
-    event_date = models.DateTimeField()
-    notes = models.TextField()
+    support_contact = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name='Support contact',
+        related_name='assigned_event',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
+    event_status = models.IntegerField(
+        verbose_name='Event status',
+        choices=EventStatus.choices,
+        default=EventStatus.IN_DEVELOPMENT
+    )
+    attendees = models.IntegerField(
+        verbose_name='Attendees',
+        blank=True,
+        null=True
+    )
+    event_date = models.DateTimeField(
+        verbose_name='Event date',
+        blank=True,
+        null=True
+    )
+    notes = models.TextField(
+        verbose_name='Notes',
+        blank=True
+    )
 

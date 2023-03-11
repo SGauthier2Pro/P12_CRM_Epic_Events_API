@@ -8,8 +8,8 @@ serializer details class for Event model
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from rest_framework import serializers
 
-from ...authentication.serializers.userlistserializer import UserListSerializer
-from ..models.event import Event
+from authentication.serializers.userlistserializer import UserListSerializer
+from crmapi.models.event import Event
 
 
 class EventDetailSerializer(ModelSerializer):

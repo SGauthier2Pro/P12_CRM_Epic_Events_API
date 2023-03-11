@@ -8,7 +8,7 @@ serializer class for Event model
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 
-from ..models.event import Event
+from crmapi.models.event import Event
 from django.contrib.auth.models import User
 
 
@@ -39,7 +39,7 @@ class EventListSerializer(ModelSerializer):
             support_contact = User.objects.get(
                 pk=attributes['support_contact'].id
             )
-            if support_contact.group != 6:
+            if (support_contact.groups.all())[0] != 'SUPPORT':
                 raise serializers.ValidationError(
                     {"support contact":
                         "This employee doesn't belong to Support group"}
