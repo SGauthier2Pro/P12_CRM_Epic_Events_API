@@ -44,7 +44,6 @@ class UserBaseSerializer(serializers.ModelSerializer):
     assigned_contracts = serializers.SerializerMethodField()
     assigned_events = serializers.SerializerMethodField()
 
-
     def get_assigned_customers(self, instance):
         queryset = Client.objects.filter(sales_contact=instance)
         serializer = ClientListSerializer(queryset, many=True)

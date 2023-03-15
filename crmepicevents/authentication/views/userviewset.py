@@ -42,8 +42,7 @@ class UserViewSet(viewsets.ModelViewSet):
     ]
 
     def get_serializer_class(self):
-        if self.request.user.is_superuser \
-                or (self.request.user.groups.all())[0] == 'MANAGER':
+        if str(self.request.user.groups.all()[0]) == 'MANAGER':
             return UserAdminSerializer
         try:
             pk = int(self.kwargs['pk'])
@@ -52,38 +51,52 @@ class UserViewSet(viewsets.ModelViewSet):
         except KeyError:
             return self.serializer_class
 
-    def perform_create(self, serializer):
-        if self.request.user.groups == 'MANAGER':
-            if 'password' in self.request.data:
-                password = make_password(self.request.data['password'])
-                user = serializer.save(password=password)
-            else:
-                user = serializer.save()
-
-            if 'groups' in self.request.data:
-                try:
-                    group = Group.objects.get(name=(self.request.data['groups']))
-                    if group.name == 'MANAGER':
-                        user.is_staff = True
-                        user.is_superuser = True
-                        user.save()
-                    else:
-                        user.is_staff = False
-                        user.is_superuser = False
-                        user.save()
-                    group.user_set.add(user)
-                except ValueError:
-                    return Response(
-                        {'Groups': "The group you enter is not a valid one !"},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+    def create(self, request, *args, **kwargs):
+        if str(self.request.user.groups.all()[0]) == "MANAGER":
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+                headers=headers
+            )
         else:
-            return Response({'message': "you are not authorized "
-                                        "to do this action"},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {'message': "you are not authorized to do this action"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+    def perform_create(self, serializer):
+        if 'password' in self.request.data:
+            password = make_password(self.request.data['password'])
+            user = serializer.save(password=password)
+        else:
+            user = serializer.save()
+
+        if 'groups' in self.request.data:
+            try:
+                group = Group.objects.get(
+                    name=(self.request.data['groups'])
+                )
+                if group.name == 'MANAGER':
+                    user.is_staff = True
+                    user.is_superuser = True
+                    user.save()
+                else:
+                    user.is_staff = False
+                    user.is_superuser = False
+                    user.save()
+                group.user_set.add(user)
+            except ValueError:
+                return Response(
+                    {'Groups': "The group you enter is not a valid one !"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
     def update(self, request, *args, **kwargs):
-        if self.request.user.is_superuser \
+        if str(self.request.user.groups.all()[0]) == 'MANAGER' \
                 or self.request.user.id == self.kwargs['pk']:
 
             if User.objects.filter(id=self.kwargs['pk']):
@@ -94,7 +107,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     data=request.data,
                     partial=True
                 )
-                print(type(serializer))
+
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
                 headers = self.get_success_headers(
@@ -142,14 +155,19 @@ class UserViewSet(viewsets.ModelViewSet):
                 )
 
     def destroy(self, request, *args, **kwargs):
-        if self.request.user.groups == 'MANAGER' \
-           or self.request.user.is_superuser:
+        if str(self.request.user.groups.all()[0]) == 'MANAGER':
+            if User.objects.filter(id=self.kwargs['pk']):
+                instance = self.get_object()
+                self.perform_destroy(instance)
+                return Response(
+                    {'success': "The user has been deleted"},
+                    status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    {'message': "This user id doesn't exists"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            instance = self.get_object()
-            self.perform_destroy(instance)
-            return Response(
-                {'success': "The user has been deleted"},
-                status=status.HTTP_200_OK)
         else:
             return Response({'message': "You are not authorized "
                                         "to delete a user"},

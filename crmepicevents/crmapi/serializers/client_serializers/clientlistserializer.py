@@ -21,5 +21,8 @@ class ClientListSerializer(ClientBaseSerializer):
             'id',
             'first_name',
             'last_name',
+            'email',
+            'phone',
+            'mobile',
             'company_name',
         ]

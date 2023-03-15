@@ -9,7 +9,8 @@ from rest_framework.serializers import SerializerMethodField
 from rest_framework import serializers
 
 from .contractbaseserializer import ContractBaseSerializer
-from crmapi.serializers.event_serializers.eventlistserializer import EventListSerializer
+from crmapi.serializers.event_serializers.eventlistserializer import \
+    EventListSerializer
 from crmapi.serializers.client_serializers.clientlistserializer import \
     ClientListSerializer
 
