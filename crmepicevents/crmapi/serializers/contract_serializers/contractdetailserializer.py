@@ -39,11 +39,12 @@ class ContractDetailSerializer(ContractBaseSerializer):
 
     def get_event(self, instance):
         if instance.event:
-            queryset = Event.objects.filter(pk=instance.id)
+            queryset = Event.objects.filter(pk=instance.event.id)
             serializer = EventListSerializer(queryset, many=True)
             return serializer.data
 
     def get_client(self, instance):
-        queryset = Client.objects.filter(pk=instance.id)
-        serializer = ClientListSerializer(queryset, many=True)
-        return serializer.data
+        if instance.client:
+            queryset = Client.objects.filter(pk=instance.client.id)
+            serializer = ClientListSerializer(queryset, many=True)
+            return serializer.data

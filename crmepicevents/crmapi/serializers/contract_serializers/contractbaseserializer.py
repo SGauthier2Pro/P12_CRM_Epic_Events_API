@@ -15,15 +15,16 @@ class ContractBaseSerializer(serializers.ModelSerializer):
         read_only=True
     )
     payment_due = serializers.DateField(
-        format="%d-%m-%Y"
+        format="%d-%m-%Y",
+        input_formats=['%d-%m-%Y', 'iso-8601']
     )
 
-    def validate_sales_contact(self, attributes):
-        """
+    """def validate_sales_contact(self, attributes):
+       
         Check if user belongs to Sales Group
         :param attributes:
         :return: attributes if from sales group
-        """
+        
 
         if attributes['sales_contact']:
             sales_contact = User.objects.get(
@@ -34,28 +35,28 @@ class ContractBaseSerializer(serializers.ModelSerializer):
                     {"sales contact":
                         "This employee doesn't belong to Sales group"}
                 )
-            return attributes['sales_contact']
+            return attributes['sales_contact']"""
 
     def validate_payment_due(self, value):
 
-        date_now = datetime.now().strftime("%Y-%m-%d")
+        date_now = datetime.now().strftime("%d-%m-%Y")
 
         # Update
         if self.instance and value:
-            if value.strftime("%Y-%m-%d") == '1900-01-01':
+            if value.strftime("%d-%m-%Y") == '01-01-1900':
                 return self.instance.payment_due
 
-            if value.strftime("%Y-%m-%d") != '1900-01-01' and value.strftime(
-                    "%Y-%m-%d") < date_now:
+            if value.strftime("%d-%m-%Y") != '01-01-1900' and value.strftime(
+                    "%d-%m-%Y") < date_now:
                 raise serializers.ValidationError(
                     "payment_due : You can not choose an older date than now.")
         # create
         elif not self.instance and value:
-            if value.strftime("%Y-%m-%d") == '1900-01-01':
+            if value.strftime("%d-%m-%Y") == '01-01-1900':
                 return None
 
-            if value.strftime("%Y-%m-%d") != '1900-01-01' and value.strftime(
-                    "%Y-%m-%d") < date_now:
+            if value.strftime("%d-%m-%Y") != '01-01-1900' and value.strftime(
+                    "%d-%m-%Y") < date_now:
                 raise serializers.ValidationError(
                     "payment_due : You can not choose an older date than now.")
         return value

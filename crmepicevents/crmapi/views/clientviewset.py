@@ -52,6 +52,8 @@ class ClientViewSet(viewsets.ModelViewSet):
                 str(self.request.user.groups.all()[0]) == "MANAGER":
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
+            if str(self.request.user.groups.all()[0]) == "SALES":
+                serializer.validated_data['sales_contact'] = self.request.user
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             return Response(
@@ -69,16 +71,18 @@ class ClientViewSet(viewsets.ModelViewSet):
         serializer.save()
 
     def update(self, request, *args, **kwargs):
-        if str(self.request.user.groups.all()[0]) == "SALES" or \
-                str(self.request.user.groups.all()[0]) == "MANAGER":
+        if Client.objects.filter(id=self.kwargs['pk']):
 
-            if Client.objects.filter(id=self.kwargs['pk']):
-                instance = self.get_object()
-                serializer = self.get_serializer(
-                    instance,
-                    data=request.data,
-                    partial=True
-                )
+            instance = self.get_object()
+            serializer = self.get_serializer(
+                instance,
+                data=request.data,
+                partial=True
+            )
+
+            if (str(self.request.user.groups.all()[0]) == "SALES" and
+                instance.sales_contact == self.request.user) \
+                    or str(self.request.user.groups.all()[0]) == "MANAGER":
 
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
@@ -91,14 +95,14 @@ class ClientViewSet(viewsets.ModelViewSet):
                     headers=headers
                 )
             else:
-                return Response(
-                    {'message': "This client id doesn't exists"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return Response({'message': "you are not authorized "
+                                            "to do this action"},
+                                status=status.HTTP_403_FORBIDDEN)
         else:
-            return Response({'message': "you are not authorized "
-                                        "to do this action"},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {'message': "This client id doesn't exists"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def perform_update(self, serializer):
         serializer.save()

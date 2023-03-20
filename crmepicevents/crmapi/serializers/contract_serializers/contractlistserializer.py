@@ -5,7 +5,6 @@ serializer class for Contract model
 @version : 1.0
 """
 
-from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 
 from .contractbaseserializer import ContractBaseSerializer
