@@ -19,24 +19,6 @@ class ContractBaseSerializer(serializers.ModelSerializer):
         input_formats=['%d-%m-%Y', 'iso-8601']
     )
 
-    """def validate_sales_contact(self, attributes):
-       
-        Check if user belongs to Sales Group
-        :param attributes:
-        :return: attributes if from sales group
-        
-
-        if attributes['sales_contact']:
-            sales_contact = User.objects.get(
-                pk=attributes['sales_contact'].id
-            )
-            if sales_contact.groups.all()[0] != 'SALES':
-                raise serializers.ValidationError(
-                    {"sales contact":
-                        "This employee doesn't belong to Sales group"}
-                )
-            return attributes['sales_contact']"""
-
     def validate_payment_due(self, value):
 
         date_now = datetime.now().strftime("%d-%m-%Y")

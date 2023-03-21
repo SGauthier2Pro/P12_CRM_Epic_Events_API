@@ -22,34 +22,32 @@ class EventBaseSerializer(serializers.ModelSerializer):
 
         if value:
             user_instance = User.objects.get(pk=value.id)
-            if user_instance.group != "SUPPORT":
+            if user_instance.groups != "SUPPORT":
                 raise serializers.ValidationError(
-                    "support_contact: Pour être affecté à ce client, "
-                    "ce professionnel doit être du groupe 'SUPPORT'.")
+                    "support_contact: This user doesn't "
+                    "belong to SUPPORT Team.")
             return value
 
     def validate_event_date(self, value):
 
-        date_now = datetime.now().strftime("%Y-%m-%d")
+        date_now = datetime.now().strftime("%d-%m-%Y")
 
         # Update
         if self.instance and value:
-            if value.strftime("%Y-%m-%d") == '1900-01-01':
-                return self.instance.event_date
+            if value.strftime("%d-%m-%Y") == '01-01-1900':
+                return self.instance.payment_due
 
-            if value.strftime("%Y-%m-%d") != '1900-01-01' and value.strftime(
-                    "%Y-%m-%d") < date_now:
+            if value.strftime("%d-%m-%Y") != '01-01-1900' and value.strftime(
+                    "%d-%m-%Y") < date_now:
                 raise serializers.ValidationError(
-                    "event_date : Une date antérieure à celle du jour "
-                    "actuel ne peut être selectionnée.")
+                    "payment_due : You can not choose an older date than now.")
         # create
         elif not self.instance and value:
-            if value.strftime("%Y-%m-%d") == '1900-01-01':
+            if value.strftime("%d-%m-%Y") == '01-01-1900':
                 return None
 
-            if value.strftime("%Y-%m-%d") != '1900-01-01' and value.strftime(
-                    "%Y-%m-%d") < date_now:
+            if value.strftime("%d-%m-%Y") != '01-01-1900' and value.strftime(
+                    "%d-%m-%Y") < date_now:
                 raise serializers.ValidationError(
-                    "event_date : Une date antérieure à celle du "
-                    "jour actuel ne peut être selectionnée.")
+                    "payment_due : You can not choose an older date than now.")
         return value
