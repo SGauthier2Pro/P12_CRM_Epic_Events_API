@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
-from rest_framework.serializers import SerializerMethodField
-
 
 class ClientBaseSerializer(serializers.ModelSerializer):
     date_created = serializers.DateTimeField(

@@ -5,14 +5,16 @@ serializer class for Event model
 @version : 1.0
 """
 
-from rest_framework.serializers import ModelSerializer
+
 from rest_framework import serializers
+from rest_framework.serializers import SerializerMethodField
+
+from .eventbaseserializer import EventBaseSerializer
 
 from crmapi.models.event import Event
-from django.contrib.auth.models import User
 
 
-class EventListSerializer(ModelSerializer):
+class EventListSerializer(EventBaseSerializer):
     id = serializers.ReadOnlyField()
 
     class Meta:
@@ -27,21 +29,3 @@ class EventListSerializer(ModelSerializer):
             'event_date',
             'notes'
         ]
-
-    def validate_support_contact(self, attributes):
-        """
-        Check if user belongs to Sales Group
-        :param attributes:
-        :return: attributes if from sales group
-        """
-
-        if attributes['support_contact']:
-            support_contact = User.objects.get(
-                pk=attributes['support_contact'].id
-            )
-            if (support_contact.groups.all())[0] != 'SUPPORT':
-                raise serializers.ValidationError(
-                    {"support contact":
-                        "This employee doesn't belong to Support group"}
-                )
-            return attributes['support_contact']

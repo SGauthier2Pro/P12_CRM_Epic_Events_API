@@ -2,8 +2,6 @@ from datetime import datetime
 
 from rest_framework import serializers
 
-from django.contrib.auth.models import User
-
 
 class ContractBaseSerializer(serializers.ModelSerializer):
     date_created = serializers.DateTimeField(

@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from crmapi.models.event import Event
+from crmapi.models.contract import Contract
 from crmapi.permissions.issupportcontactoradmin import IsSupportContactOrAdmin
 from crmapi.serializers.event_serializers.eventlistserializer import \
     EventListSerializer
@@ -31,7 +32,7 @@ class EventViewSet(viewsets.ModelViewSet):
         'id',
         'event_status'
     ]
-    permission_classes = [IsAuthenticated, IsSupportContactOrAdmin]
+    permission_classes = [IsAuthenticated, IsSupportContactOrAdmin] #
 
     def get_serializer_class(self):
         if self.request.user.is_staff \
@@ -45,15 +46,28 @@ class EventViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         if str(self.request.user.groups.all()[0]) == "SALES" or \
                 str(self.request.user.groups.all()[0]) == "MANAGER":
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED,
-                headers=headers
-            )
+            if request.data['contract_id']:
+                if Contract.objects.filter(pk=request.data['contract_id']):
+                    serializer = self.get_serializer(data=request.data)
+                    serializer.is_valid(raise_exception=True)
+                    self.perform_create(serializer)
+
+                    headers = self.get_success_headers(serializer.data)
+                    return Response(
+                        serializer.data,
+                        status=status.HTTP_201_CREATED,
+                        headers=headers
+                    )
+                else:
+                    return Response(
+                        {'contract': "This contract id doesn't exists !"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            else:
+                return Response(
+                    {'contract': "You must enter a contract id !"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         else:
             return Response(
                 {'message': "you are not authorized to do this action"},
@@ -61,7 +75,14 @@ class EventViewSet(viewsets.ModelViewSet):
             )
 
     def perform_create(self, serializer):
-        serializer.save()
+        event = serializer.save()
+
+        contract = Contract.objects.get(
+            pk=self.request.data['contract_id']
+        )
+
+        contract.event = event
+        contract.save()
 
     def update(self, request, *args, **kwargs):
         if Event.objects.filter(id=self.kwargs['pk']):

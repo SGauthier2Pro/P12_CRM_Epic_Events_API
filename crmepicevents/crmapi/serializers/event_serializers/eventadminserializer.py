@@ -9,6 +9,7 @@ class EventAdminSerializer(EventBaseSerializer):
         model = Event
         fields = (
             'id',
+            'event_client',
             'support_contact',
             'date_created',
             'date_updated',

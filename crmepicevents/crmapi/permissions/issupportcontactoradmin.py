@@ -10,7 +10,7 @@ class IsSupportContactOrAdmin(permissions.BasePermission):
             return True
 
     def has_object_permission(self, request, view, obj):
-        if request.user.groups.all()[0] == 'SUPPORT':
+        if str(request.user.groups.all()[0]) == 'SUPPORT':
             return True
         if request.user.is_superuser:
             return True

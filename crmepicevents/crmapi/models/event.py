@@ -38,17 +38,19 @@ class Event(models.Model):
     event_status = models.IntegerField(
         verbose_name='Event status',
         choices=EventStatus.choices,
-        default=EventStatus.IN_DEVELOPMENT
+        default=0
     )
     attendees = models.IntegerField(
         verbose_name='Attendees',
         blank=True,
-        null=True
+        null=False,
+        default='0'
     )
-    event_date = models.DateTimeField(
+    event_date = models.DateField(
         verbose_name='Event date',
         blank=True,
-        null=True
+        null=False,
+        default="1900-01-01"
     )
     notes = models.TextField(
         verbose_name='Notes',
