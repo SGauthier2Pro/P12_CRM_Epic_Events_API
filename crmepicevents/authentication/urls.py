@@ -9,7 +9,8 @@ from rest_framework import routers
 router = routers.SimpleRouter()
 router.register('users',
                 UserViewSet,
-                basename='users')
+                basename='users'
+                )
 
 urlpatterns = [
     path('login/', MyObtainTokenPairView.as_view(), name='token_obtain_pair'),

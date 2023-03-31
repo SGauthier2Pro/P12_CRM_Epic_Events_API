@@ -1,4 +1,6 @@
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.password_validation import validate_password, \
+    ValidationError
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 
@@ -26,14 +28,13 @@ class UserViewSet(viewsets.ModelViewSet):
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
 
-    searching_fields = [
+    search_fields = [
         'id',
         'first_name',
         'last_name',
-        'email',
-        'group'
+        'email'
     ]
-    fields_to_order = [
+    ordering_fields = [
         'id',
         'username',
         'date_created',
@@ -54,6 +55,13 @@ class UserViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         if str(self.request.user.groups.all()[0]) == "MANAGER":
             serializer = self.get_serializer(data=request.data)
+            try:
+                validate_password(self.request.data['password'])
+            except ValidationError as error:
+                return Response(
+                    {"password": error.messages[0]},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
@@ -97,7 +105,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         if str(self.request.user.groups.all()[0]) == 'MANAGER' \
-                or self.request.user.id == self.kwargs['pk']:
+                or self.request.user.id == int(self.kwargs['pk']):
 
             if User.objects.filter(id=self.kwargs['pk']):
                 instance = self.get_object()
@@ -107,7 +115,14 @@ class UserViewSet(viewsets.ModelViewSet):
                     data=request.data,
                     partial=True
                 )
-
+                if 'password' in self.request.data:
+                    try:
+                        validate_password(self.request.data['password'])
+                    except ValidationError as error:
+                        return Response(
+                            {"password": error.messages[0]},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
                 headers = self.get_success_headers(

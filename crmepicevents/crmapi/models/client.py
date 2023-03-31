@@ -45,6 +45,7 @@ class Client(models.Model):
         max_length=250,
         verbose_name='Compagny name',
         blank=False,
+        unique=True,
 
     )
     date_created = models.DateTimeField(
