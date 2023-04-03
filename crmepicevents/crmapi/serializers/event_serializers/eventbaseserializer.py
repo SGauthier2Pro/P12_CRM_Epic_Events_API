@@ -41,7 +41,7 @@ class EventBaseSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_contract_id(self, instance):
-        queryset = Contract.objects.get(event=instance)
+        queryset = Contract.objects.filter(event=instance)
         serializer = ContractListSerializer(queryset, many=True)
         return serializer.data
 

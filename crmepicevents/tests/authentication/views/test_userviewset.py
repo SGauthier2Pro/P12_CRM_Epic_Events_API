@@ -30,9 +30,11 @@ class TestUserViewSet:
         client.credentials(
             HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
         response = client.get(self.endpoint)
+        content = response.content.decode()
+        expected_content = '"password":'
 
         assert response.status_code == status.HTTP_200_OK
-        assert 'password' in str(response.data)
+        assert expected_content in content
 
     @pytest.mark.django_db
     def test_get_users_list_with_sales_credentials(
@@ -42,9 +44,11 @@ class TestUserViewSet:
         client.credentials(
             HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
         response = client.get(self.endpoint)
+        content = response.content.decode()
+        expected_content = '"password":'
 
         assert response.status_code == status.HTTP_200_OK
-        assert 'password' not in str(response.data)
+        assert expected_content not in content
 
     @pytest.mark.django_db
     def test_get_users_list_with_support_credentials(
@@ -54,6 +58,8 @@ class TestUserViewSet:
         client.credentials(
             HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
         response = client.get(self.endpoint)
+        content = response.content.decode()
+        expected_content = '"password":'
 
         assert response.status_code == status.HTTP_200_OK
-        assert 'password' not in str(response.data)
+        assert expected_content not in content

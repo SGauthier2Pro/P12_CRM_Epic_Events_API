@@ -31,9 +31,6 @@ class ClientViewSet(viewsets.ModelViewSet):
         'sales_contact'
     ]
     search_fields = [
-        'id',
-        'first_name',
-        'last_name',
         'email',
         'company_name'
     ]
@@ -44,8 +41,8 @@ class ClientViewSet(viewsets.ModelViewSet):
                 or str(self.request.user.groups.all()[0]) == 'MANAGER':
             return ClientAdminSerializer
         if str(self.request.user.groups.all()[0]) == 'SALES':
-            return ClientDetailSerializer
-        return ClientListSerializer
+            return self.detail_serializer_class
+        return self.serializer_class
 
     def create(self, request, *args, **kwargs):
         if str(self.request.user.groups.all()[0]) == "SALES" or \
@@ -101,7 +98,7 @@ class ClientViewSet(viewsets.ModelViewSet):
         else:
             return Response(
                 {'message': "This client id doesn't exists"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_404_NOT_FOUND
             )
 
     def perform_update(self, serializer):
@@ -118,7 +115,7 @@ class ClientViewSet(viewsets.ModelViewSet):
             else:
                 return Response(
                     {'message': "This client id doesn't exists"},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_404_NOT_FOUND
                 )
         else:
             return Response(

@@ -20,5 +20,6 @@ class ClientAdminSerializer(ClientBaseSerializer):
             'company_name',
             'date_created',
             'date_updated',
+            'confirmed',
             'contracts'
         )

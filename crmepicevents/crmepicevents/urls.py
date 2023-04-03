@@ -24,9 +24,9 @@ from crmapi.views.eventviewset import EventViewSet
 # import of all viewsets
 
 router = routers.SimpleRouter()
-router.register(r'clients_list', ClientViewSet, basename="client")
-router.register(r'contracts_list', ContractViewSet, basename="contract")
-router.register(r'events_list', EventViewSet, basename="event")
+router.register(r'clients', ClientViewSet, basename="client")
+router.register(r'contracts', ContractViewSet, basename="contract")
+router.register(r'events', EventViewSet, basename="event")
 
 urlpatterns = [
     path('admin/', admin.site.urls),

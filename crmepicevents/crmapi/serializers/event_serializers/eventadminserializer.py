@@ -10,6 +10,7 @@ class EventAdminSerializer(EventBaseSerializer):
         fields = (
             'id',
             'event_client',
+            'contract_id',
             'support_contact',
             'date_created',
             'date_updated',
