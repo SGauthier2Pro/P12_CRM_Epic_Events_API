@@ -19,7 +19,9 @@ def get_manager_user():
         password='P@s$4TestAp1',
         email='managertest@test.net',
         first_name='manager',
-        last_name='test'
+        last_name='test',
+        is_staff=True,
+        is_superuser=True
     )
     group = Group.objects.get(name='MANAGER')
     group.user_set.add(user)
@@ -62,7 +64,9 @@ def get_datas():
         password='P@s$4TestAp1',
         email='managertest@test.net',
         first_name='manager',
-        last_name='test'
+        last_name='test',
+        is_staff=True,
+        is_superuser=True
     )
     group = Group.objects.get(name='MANAGER')
     group.user_set.add(user_manager)
