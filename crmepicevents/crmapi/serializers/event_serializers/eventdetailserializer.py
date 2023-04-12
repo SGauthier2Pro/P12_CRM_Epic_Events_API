@@ -26,7 +26,7 @@ class EventDetailSerializer(EventBaseSerializer):
         fields = [
             'id',
             'event_client',
-            'contract_id',
+            'event_contract',
             'date_created',
             'date_updated',
             'support_contact',

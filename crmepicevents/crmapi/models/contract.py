@@ -39,7 +39,7 @@ class Contract(models.Model):
     )
     amount = models.FloatField(
         verbose_name='Amount',
-        default='0.0'
+        default=0.0
     )
     payment_due = models.DateField(
         verbose_name='Date of payment',

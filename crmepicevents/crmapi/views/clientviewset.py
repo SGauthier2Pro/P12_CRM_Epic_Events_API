@@ -2,25 +2,22 @@ from rest_framework import filters, viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from crmapi.permissions.issalescontactoradmin import IsSalesContactOrAdmin
-
 from crmapi.models.client import Client
 
 from crmapi.serializers.client_serializers.clientlistserializer import \
     ClientListSerializer
 from crmapi.serializers.client_serializers.clientdetailserializer import \
     ClientDetailSerializer
-from crmapi.serializers.client_serializers.clientadminserializer import \
-    ClientAdminSerializer
+
+from crmapi.views.multipleserializermixin import MultipleSerializerMixin
 
 
-class ClientViewSet(viewsets.ModelViewSet):
+class ClientViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
 
-    queryset = Client.objects.all()
     serializer_class = ClientListSerializer
     detail_serializer_class = ClientDetailSerializer
 
-    permission_classes = [IsAuthenticated, ]
+    permission_classes = [IsAuthenticated]
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
 
@@ -35,14 +32,15 @@ class ClientViewSet(viewsets.ModelViewSet):
         'company_name'
     ]
 
-    def get_serializer_class(self):
-        if self.request.user.is_staff \
-                or self.request.user.is_superuser \
-                or str(self.request.user.groups.all()[0]) == 'MANAGER':
-            return ClientAdminSerializer
-        if str(self.request.user.groups.all()[0]) == 'SALES':
-            return self.detail_serializer_class
-        return self.serializer_class
+    def get_queryset(self):
+        queryset = Client.objects.all()
+        company_name = self.request.GET.get('company_name')
+        email = self.request.GET.get('email')
+        if company_name:
+            queryset = queryset.filter(company_name=company_name)
+        if email:
+            queryset = queryset.filter(email=email)
+        return queryset
 
     def create(self, request, *args, **kwargs):
         if str(self.request.user.groups.all()[0]) == "SALES" or \

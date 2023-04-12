@@ -32,7 +32,9 @@ class EventBaseSerializer(serializers.ModelSerializer):
     #misc fields
 
     event_client = SerializerMethodField()
-    contract_id = SerializerMethodField()
+    event_client_id = SerializerMethodField()
+    event_contract = SerializerMethodField()
+    event_contract_id = SerializerMethodField()
 
     def get_event_client(self, instance):
         contract = Contract.objects.get(event=instance)
@@ -40,10 +42,21 @@ class EventBaseSerializer(serializers.ModelSerializer):
         serializer = ClientListSerializer(queryset, many=True)
         return serializer.data
 
-    def get_contract_id(self, instance):
+    def get_event_client_id(self, instance):
+        contract = Contract.objects.get(event=instance)
+        queryset = Client.objects.filter(pk=contract.client.id)
+        serializer = ClientListSerializer(queryset, many=True)
+        return serializer.data[0]['id']
+
+    def get_event_contract(self, instance):
         queryset = Contract.objects.filter(event=instance)
         serializer = ContractListSerializer(queryset, many=True)
         return serializer.data
+
+    def get_event_contract_id(self, instance):
+        queryset = Contract.objects.filter(event=instance)
+        serializer = ContractListSerializer(queryset, many=True)
+        return serializer.data[0]['id']
 
     def validate_support_contact(self, value):
         """
@@ -56,7 +69,7 @@ class EventBaseSerializer(serializers.ModelSerializer):
             user_instance = User.objects.get(pk=value.id)
             if str(user_instance.groups.all()[0]) != "SUPPORT":
                 raise serializers.ValidationError(
-                    "support_contact: This user doesn't "
+                    "support_contact: This user does not "
                     "belong to SUPPORT Team.")
             return value
 

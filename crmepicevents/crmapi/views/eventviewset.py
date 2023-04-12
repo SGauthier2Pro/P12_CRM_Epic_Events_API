@@ -1,24 +1,25 @@
 from rest_framework import filters, viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+import datetime
 
 from crmapi.models.event import Event
 from crmapi.models.contract import Contract
-from crmapi.permissions.issupportcontactoradmin import IsSupportContactOrAdmin
 from crmapi.serializers.event_serializers.eventlistserializer import \
     EventListSerializer
 from crmapi.serializers.event_serializers.eventdetailserializer import \
     EventDetailSerializer
-from crmapi.serializers.event_serializers.eventadminserializer import \
-    EventAdminSerializer
+
+from django_filters.rest_framework import DjangoFilterBackend
+
+from.multipleserializermixin import MultipleSerializerMixin
 
 
-class EventViewSet(viewsets.ModelViewSet):
+class EventViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
 
-    queryset = Event.objects.all()
     serializer_class = EventListSerializer
     detail_serializer_class = EventDetailSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     ordering_fields = [
         'id',
         'customer_instance_id',
@@ -28,36 +29,75 @@ class EventViewSet(viewsets.ModelViewSet):
         'support_contact_id',
         'event_date'
     ]
-    search_fields = [
-        'id',
-        'event_status'
+    filter_fields = [
+        'event_contract__client__company_name',
+        'event_contract__client__email',
+        'event_date'
     ]
-    permission_classes = [IsAuthenticated, IsSupportContactOrAdmin] #
+    permission_classes = [IsAuthenticated]
 
-    def get_serializer_class(self):
-        if self.request.user.is_staff \
-                or self.request.user.is_superuser \
-                or str(self.request.user.groups.all()[0]) == 'MANAGER':
-            return EventAdminSerializer
-        if str(self.request.user.groups.all()[0]) == 'SUPPORT':
-            return EventDetailSerializer
-        return EventListSerializer
+    def get_queryset(self):
+        queryset = Event.objects.all()
+
+        company_name = self.request.GET.get('company_name')
+        if company_name:
+            queryset = queryset.filter(
+                id__in=Contract.objects.filter(
+                    client__company_name=company_name)
+            )
+
+        client_email = self.request.GET.get('client_email')
+        if client_email:
+            queryset = queryset.filter(
+                id__in=Contract.objects.filter(
+                    client__email=client_email)
+            )
+        event_date_to_test = self.request.GET.get('event_date')
+        if event_date_to_test:
+            event_date = datetime.datetime.strptime(
+                event_date_to_test,
+                "%d-%m-%Y")
+            queryset = queryset.filter(
+                event_date=event_date.strftime("%Y-%m-%d"))
+        return queryset
 
     def create(self, request, *args, **kwargs):
         if str(self.request.user.groups.all()[0]) == "SALES" or \
                 str(self.request.user.groups.all()[0]) == "MANAGER":
-            if request.data['contract_id']:
+            if 'contract_id' in request.data:
                 if Contract.objects.filter(pk=request.data['contract_id']):
-                    serializer = self.get_serializer(data=request.data)
-                    serializer.is_valid(raise_exception=True)
-                    self.perform_create(serializer)
 
-                    headers = self.get_success_headers(serializer.data)
-                    return Response(
-                        serializer.data,
-                        status=status.HTTP_201_CREATED,
-                        headers=headers
+                    contract = Contract.objects.get(
+                        pk=request.data['contract_id']
                     )
+
+                    if contract.status:
+                        if self.request.user == contract.client.sales_contact \
+                           or \
+                           str(self.request.user.groups.all()[0]) == "MANAGER":
+
+                            serializer = self.get_serializer(data=request.data)
+                            serializer.is_valid(raise_exception=True)
+                            self.perform_create(serializer)
+
+                            headers = self.get_success_headers(serializer.data)
+                            return Response(
+                                serializer.data,
+                                status=status.HTTP_201_CREATED,
+                                headers=headers
+                            )
+                        else:
+                            return Response(
+                                {'contract_id': "You are not sales "
+                                                "contact for this contract !"},
+                                status=status.HTTP_403_FORBIDDEN
+                            )
+                    else:
+                        return Response(
+                            {'event_contract': "This contract is"
+                                               " not signed yet !"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
                 else:
                     return Response(
                         {'contract': "This contract id doesn't exists !"},
@@ -65,7 +105,7 @@ class EventViewSet(viewsets.ModelViewSet):
                     )
             else:
                 return Response(
-                    {'contract': "You must enter a contract id !"},
+                    {'contract_id': "You must enter a contract id !"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
         else:
@@ -88,15 +128,17 @@ class EventViewSet(viewsets.ModelViewSet):
         if Event.objects.filter(id=self.kwargs['pk']):
 
             instance = self.get_object()
+            contract = Contract.objects.get(event=instance)
+
             serializer = self.get_serializer(
                 instance,
                 data=request.data,
                 partial=True
             )
 
-            if (str(self.request.user.groups.all()[0]) == "SUPPORT" and
-                instance.sales_contact == self.request.user) \
-                    or str(self.request.user.groups.all()[0]) == "MANAGER":
+            if instance.support_contact == self.request.user \
+                or str(self.request.user.groups.all()[0]) == "MANAGER"\
+                    or contract.client.sales_contact == self.request.user:
 
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
@@ -115,7 +157,7 @@ class EventViewSet(viewsets.ModelViewSet):
         else:
             return Response(
                 {'message': "This event id doesn't exists"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_404_NOT_FOUND
             )
 
     def perform_update(self, serializer):
@@ -132,10 +174,10 @@ class EventViewSet(viewsets.ModelViewSet):
             else:
                 return Response(
                     {'message': "This event id doesn't exists"},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_404_NOT_FOUND
                 )
         else:
             return Response(
-                {'message': "You are not authorized to delete a event"},
+                {'message': "you are not authorized to do this action"},
                 status=status.HTTP_403_FORBIDDEN
             )

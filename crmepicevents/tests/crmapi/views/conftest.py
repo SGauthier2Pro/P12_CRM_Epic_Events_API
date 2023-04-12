@@ -81,6 +81,16 @@ def get_datas():
     group = Group.objects.get(name='SUPPORT')
     group.user_set.add(user_support)
 
+    user_support2 = User.objects.create_user(
+        username='supporttest2',
+        password='P@s$4TestAp1',
+        email='supporttest2@test.net',
+        first_name='support',
+        last_name='test2'
+    )
+    group = Group.objects.get(name='SUPPORT')
+    group.user_set.add(user_support2)
+
     user_sales = User.objects.create_user(
         username='salestest',
         password='P@s$4TestAp1',
@@ -146,6 +156,13 @@ def get_datas():
         attendees=110,
         event_date='2024-07-12',
         support_contact=user_support
+    )
+
+    contract3 = Contract.objects.create(
+        client=client1,
+        status=True,
+        event=event1,
+        payment_due='2023-07-12'
     )
 
     return locals()

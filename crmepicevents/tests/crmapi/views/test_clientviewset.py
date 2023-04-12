@@ -1,6 +1,8 @@
 import pytest
 from rest_framework import status
 
+from crmapi.models.client import Client
+
 
 class TestClientViewSet:
 
@@ -65,18 +67,21 @@ class TestClientViewSet:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
+    # GET /clients/ ?searh=
     @pytest.mark.django_db
     def test_get_clients_list_with_search_on_company_name(
             self, client, get_datas):
         user = get_datas['user_manager']
 
-        request = (self.endpoint + '?search=Client1')
+        client_test = get_datas['client1']
+
+        request = (self.endpoint + '?company_name=' + client_test.company_name)
 
         client.credentials(
             HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
         response = client.get(request)
         content = response.content.decode()
-        expected_content = '"company_name":"Client1 Corp"'
+        expected_content = '"company_name":"' + client_test.company_name + '"'
 
         assert response.status_code == status.HTTP_200_OK
         assert expected_content in content
@@ -86,13 +91,15 @@ class TestClientViewSet:
             self, client, get_datas):
         user = get_datas['user_manager']
 
-        request = (self.endpoint + '?search=client2@client2.net')
+        client_test = get_datas['client2']
+
+        request = (self.endpoint + '?email=' + client_test.email)
 
         client.credentials(
             HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
         response = client.get(request)
         content = response.content.decode()
-        expected_content = '"email":"client2@client2.net"'
+        expected_content = '"email":"' + client_test.email + '"'
 
         assert response.status_code == status.HTTP_200_OK
         assert expected_content in content
@@ -102,7 +109,9 @@ class TestClientViewSet:
             self, client, get_datas):
         user = get_datas['user_manager']
 
-        request = (self.endpoint + '?search=0123456789')
+        client_test = get_datas['client2']
+
+        request = (self.endpoint + '?search=' + client_test.phone)
 
         client.credentials(
             HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
@@ -128,10 +137,11 @@ class TestClientViewSet:
         response = client.get(request)
         content = response.content.decode()
         expected_content1 = '"id":' + str(client_test.id)
-        expected_content2 = '"contract":'
+        expected_content2 = '"contracts":'
 
         assert response.status_code == status.HTTP_200_OK
-        assert expected_content1, expected_content2 in content
+        assert expected_content1 in content
+        assert expected_content2 in content
 
     @pytest.mark.django_db
     def test_get_clients_details_with_support_credentials(
@@ -148,11 +158,11 @@ class TestClientViewSet:
 
         content = response.content.decode()
         expected_content1 = '"id":' + str(client_test.id)
-        expected_content2 = '"contract":'
+        expected_content2 = '"contracts":'
 
         assert response.status_code == status.HTTP_200_OK
         assert expected_content1 in content
-        assert expected_content2 not in content
+        assert expected_content2 in content
 
     @pytest.mark.django_db
     def test_get_clients_details_with_sales_credentials(
@@ -169,10 +179,11 @@ class TestClientViewSet:
 
         content = response.content.decode()
         expected_content1 = '"id":' + str(client_test.id)
-        expected_content2 = '"contract":'
+        expected_content2 = '"contracts":'
 
         assert response.status_code == status.HTTP_200_OK
-        assert expected_content1, expected_content2 in content
+        assert expected_content1 in content
+        assert expected_content2 in content
 
     @pytest.mark.django_db
     def test_get_clients_details_with_unknown_credentials(
@@ -249,11 +260,11 @@ class TestClientViewSet:
             data=client_data,
             format='json'
         )
-        content = response.content.decode()
-        expected_content = '"sales_contact":' + str(user.id)
+
+        client_test = Client.objects.get(company_name='Client4 Corp')
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert expected_content in content
+        assert client_test.sales_contact == user
 
     @pytest.mark.django_db
     def test_create_clients_with_support_credentials(

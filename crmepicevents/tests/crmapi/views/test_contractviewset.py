@@ -30,11 +30,12 @@ class TestContractViewSet:
         response = client.get(self.endpoint)
 
         content = response.content.decode()
-        expected_content1 = '"client":[{"id":'
-        expected_content2 = '"event":[{"id":'
+        expected_content1 = '"client":'
+        expected_content2 = '"event":'
 
         assert response.status_code == status.HTTP_200_OK
-        assert expected_content1, expected_content2 in content
+        assert expected_content1 in content
+        assert expected_content2 in content
 
     @pytest.mark.django_db
     def test_get_contracts_list_with_support_credentials(
@@ -46,11 +47,12 @@ class TestContractViewSet:
         response = client.get(self.endpoint)
 
         content = response.content.decode()
-        expected_content1 = '"client":[{"id":'
-        expected_content2 = '"event":[{"id":'
+        expected_content1 = '"client":'
+        expected_content2 = '"event":'
 
         assert response.status_code == status.HTTP_200_OK
-        assert expected_content1, expected_content2 not in content
+        assert expected_content1 in content
+        assert expected_content2 in content
 
     @pytest.mark.django_db
     def test_get_contracts_list_with_sales_credentials(
@@ -62,11 +64,12 @@ class TestContractViewSet:
         response = client.get(self.endpoint)
 
         content = response.content.decode()
-        expected_content1 = '"client":[{"id":'
-        expected_content2 = '"event":[{"id":'
+        expected_content1 = '"client":'
+        expected_content2 = '"event":'
 
         assert response.status_code == status.HTTP_200_OK
-        assert expected_content1, expected_content2 in content
+        assert expected_content1 in content
+        assert expected_content2 in content
 
     @pytest.mark.django_db
     def test_get_contracts_list_with_unknown_credentials(
@@ -77,13 +80,87 @@ class TestContractViewSet:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
+    # GET /contracts/ ?search=
+    @pytest.mark.django_db
+    def test_get_contracts_list_with_search_on_client_company_name(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+
+        client_test = get_datas['client1']
+
+        request = (self.endpoint + '?company_name=' + client_test.company_name)
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+        response = client.get(request)
+        content = response.content.decode()
+        expected_content = '"client":' + str(client_test.id)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert expected_content in content
+
+    @pytest.mark.django_db
+    def test_get_contracts_list_with_search_on_client_email(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+
+        client_test = get_datas['client1']
+
+        request = (self.endpoint + '?client_email=' + client_test.email)
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+        response = client.get(request)
+        content = response.content.decode()
+        expected_content = '"client":' + str(client_test.id)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert expected_content in content
+
+    @pytest.mark.django_db
+    def test_get_contracts_list_with_search_on_amount(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+
+        contract_test = get_datas['contract1']
+
+        request = self.endpoint + '?amount=' + str(int(contract_test.amount))
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+        response = client.get(request)
+        content = response.content.decode()
+        expected_content = '"amount":' + str(contract_test.amount)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert expected_content in content
+
+    @pytest.mark.django_db
+    def test_get_contracts_list_with_search_on_date_created(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+
+        contract_test = get_datas['contract1']
+        date_to_test = contract_test.date_created.strftime("%d-%m-%Y")
+
+        request = self.endpoint + '?date_created=' + date_to_test
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+        response = client.get(request)
+        content = response.content.decode()
+        expected_content = '"date_created":"' + date_to_test
+
+        assert response.status_code == status.HTTP_200_OK
+        assert expected_content in content
+
     # GET /contracts/{pk}
     @pytest.mark.django_db
     def test_get_contracts_details_with_manager_credentials(
             self, client, get_datas):
         user = get_datas['user_manager']
 
-        contract_test = get_datas['contract1']
+        contract_test = get_datas['contract3']
 
         request = (self.endpoint + str(contract_test.id) + '/')
 
@@ -96,14 +173,15 @@ class TestContractViewSet:
         expected_content2 = '"event":[{"id":'
 
         assert response.status_code == status.HTTP_200_OK
-        assert expected_content1, expected_content2 in content
+        assert expected_content1 in content
+        assert expected_content2 in content
 
     @pytest.mark.django_db
     def test_get_contracts_details_with_support_credentials(
             self, client, get_datas):
         user = get_datas['user_support']
 
-        contract_test = get_datas['contract1']
+        contract_test = get_datas['contract3']
 
         request = (self.endpoint + str(contract_test.id) + '/')
 
@@ -116,14 +194,15 @@ class TestContractViewSet:
         expected_content2 = '"event":[{"id":'
 
         assert response.status_code == status.HTTP_200_OK
-        assert expected_content1, expected_content2 in content
+        assert expected_content1 in content
+        assert expected_content2 in content
 
     @pytest.mark.django_db
     def test_get_contracts_details_with_sales_credentials(
             self, client, get_datas):
         user = get_datas['user_sales']
 
-        contract_test = get_datas['contract1']
+        contract_test = get_datas['contract3']
 
         request = (self.endpoint + str(contract_test.id) + '/')
 
@@ -136,7 +215,8 @@ class TestContractViewSet:
         expected_content2 = '"event":[{"id":'
 
         assert response.status_code == status.HTTP_200_OK
-        assert expected_content1, expected_content2 in content
+        assert expected_content1 in content
+        assert expected_content2 in content
 
     @pytest.mark.django_db
     def test_get_contracts_details_with_unknown_credentials(

@@ -21,6 +21,8 @@ class EventListSerializer(EventBaseSerializer):
         model = Event
         fields = [
             'id',
+            'event_client_id',
+            'event_contract_id',
             'date_created',
             'date_updated',
             'support_contact',

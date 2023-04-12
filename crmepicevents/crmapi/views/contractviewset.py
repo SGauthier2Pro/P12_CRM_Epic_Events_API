@@ -1,45 +1,60 @@
 from rest_framework import filters, viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+import datetime
 
-from ..models.contract import Contract
-from ..models.client import Client
-from ..permissions.issalescontactoradmin import IsSalesContactOrAdmin
+from crmapi.models.contract import Contract
+from crmapi.models.client import Client
+
 from crmapi.serializers.contract_serializers.contractlistserializer import \
     ContractListSerializer
 from crmapi.serializers.contract_serializers.contractdetailserializer import \
     ContractDetailSerializer
 
+from crmapi.views.multipleserializermixin import MultipleSerializerMixin
 
-class ContractViewSet(viewsets.ModelViewSet):
 
-    queryset = Contract.objects.all()
+class ContractViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
+
     serializer_class = ContractListSerializer
     detail_serializer_class = ContractDetailSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     ordering_fields = [
         'id',
-        'sales_contact',
         'client',
         'amount',
         'date_created',
         'date_updated',
         'payment_due'
     ]
-    search_fields = [
-        'id',
-        'status'
+    filter_fields = [
+        'client__company_name',
+        'client__email',
+        'amount',
+        'date_created'
     ]
-    permission_classes = [IsAuthenticated, ] # IsSalesContactOrAdmin
+    permission_classes = [IsAuthenticated]
 
-    def get_serializer_class(self):
-        if self.request.user.is_staff \
-                or self.request.user.is_superuser \
-                or str(self.request.user.groups.all()[0]) == 'MANAGER':
-            return ContractDetailSerializer
-        if str(self.request.user.groups.all()[0]) == 'SALES':
-            return ContractDetailSerializer
-        return ContractListSerializer
+    def get_queryset(self):
+        queryset = Contract.objects.all()
+        company_name = self.request.GET.get('company_name')
+        if company_name:
+            queryset = queryset.filter(client__company_name=company_name)
+        client_email = self.request.GET.get('client_email')
+        if client_email:
+            queryset = queryset.filter(client__email=client_email)
+        amount = self.request.GET.get('amount')
+        if amount:
+            queryset = queryset.filter(amount=amount)
+        date_created_to_test = self.request.GET.get('date_created')
+        if date_created_to_test:
+            date_created = datetime.datetime.strptime(
+                date_created_to_test,
+                "%d-%m-%Y")
+            queryset = queryset.filter(
+                date_created__contains=date_created.strftime("%Y-%m-%d"))
+        return queryset
 
     def create(self, request, *args, **kwargs):
         if str(self.request.user.groups.all()[0]) == "SALES" or \
@@ -62,7 +77,8 @@ class ContractViewSet(viewsets.ModelViewSet):
                     )
                 else:
                     return Response(
-                        {'message': "you are not sales contact for this client !"},
+                        {'message': "you are not sales "
+                                    "contact for this client !"},
                         status=status.HTTP_403_FORBIDDEN
                     )
             else:
