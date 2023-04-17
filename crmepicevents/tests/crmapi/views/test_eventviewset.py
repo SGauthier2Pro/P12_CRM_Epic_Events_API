@@ -247,7 +247,7 @@ class TestEventViewSet:
         event_data = {
             'contract_id': contract_test.id,
             'attendees': 110,
-            'event_date': '2024-07-12'
+            'event_date': '12-07-2025'
         }
 
         client.credentials(

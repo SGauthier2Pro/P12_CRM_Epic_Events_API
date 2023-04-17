@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 
 from rest_framework import serializers
 
@@ -19,15 +19,14 @@ class ContractBaseSerializer(serializers.ModelSerializer):
 
     def validate_payment_due(self, value):
 
-        date_now = datetime.now().strftime("%d-%m-%Y")
+        date_now = date.today()
 
         # Update
         if self.instance and value:
             if value.strftime("%d-%m-%Y") == '01-01-1900':
                 return self.instance.payment_due
 
-            if value.strftime("%d-%m-%Y") != '01-01-1900' and value.strftime(
-                    "%d-%m-%Y") < date_now:
+            if value.strftime("%d-%m-%Y") != '01-01-1900' and value < date_now:
                 raise serializers.ValidationError(
                     "payment_due : You can not choose an older date than now.")
         # create
@@ -35,8 +34,7 @@ class ContractBaseSerializer(serializers.ModelSerializer):
             if value.strftime("%d-%m-%Y") == '01-01-1900':
                 return None
 
-            if value.strftime("%d-%m-%Y") != '01-01-1900' and value.strftime(
-                    "%d-%m-%Y") < date_now:
+            if value.strftime("%d-%m-%Y") != '01-01-1900' and value < date_now:
                 raise serializers.ValidationError(
                     "payment_due : You can not choose an older date than now.")
         return value
