@@ -98,7 +98,7 @@ Documentation is available [here](https://www.pgadmin.org/docs/pgadmin4/latest/i
 ***
 use the following command from P12-CRM_Epic_Event_API folder to restore database :
 ```
-psql -U username --set ON_ERROR_STOP=on -d CRMEEDB -f P12-CRM_Epic_Event_API\CRMEEDB_BKP_17-04-2023
+psql -U username --set ON_ERROR_STOP=on -d CRMEEDB -f CRMEEDB_BKP_17-04-2023
 ```
 
 ***
