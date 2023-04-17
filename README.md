@@ -94,14 +94,6 @@ The easiest and quickest way to do it is to use [PgAdmin4](https://www.pgadmin.o
 Documentation is available [here](https://www.pgadmin.org/docs/pgadmin4/latest/index.html)
 
 ***
-### Restore database
-***
-use the following command from P12-CRM_Epic_Event_API folder to restore database :
-```
-psql -U username --set ON_ERROR_STOP=on -d CRMEEDB -f CRMEEDB_BKP_17-04-2023
-```
-
-***
 ### Git 2.35.1 installation
 ***
 For installing Git on your computer go to this adress (all OS contents):
@@ -139,6 +131,15 @@ You have now to clone the distant repository on your computer.
 ***
 ## Configuring environment
 ***
+
+***
+### Restore database
+***
+use the following command from P12-CRM_Epic_Event_API folder to restore database :
+```
+psql -U username --set ON_ERROR_STOP=on -d CRMEEDB -f CRMEEDB_BKP_17-04-2023
+```
+
 ***
 ### Installation and execution with virtualenv
 ***
