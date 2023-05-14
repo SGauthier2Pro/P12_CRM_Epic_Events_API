@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
+    'drf_api_logger',
     'rest_framework',
     'rest_framework_simplejwt',
     'authentication',
@@ -51,6 +52,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'drf_api_logger.middleware.api_logger_middleware.APILoggerMiddleware',
 ]
 
 ROOT_URLCONF = 'crmepicevents.urls'
@@ -126,6 +129,8 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Rest Framework config
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -141,7 +146,16 @@ REST_FRAMEWORK = {
         ('rest_framework_simplejwt.authentication.JWTAuthentication',)
 }
 
+# Simple JWT config
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
+
+# drf-api-logger config
+
+DRF_API_LOGGER_DATABASE = True
+DRF_API_LOGGER_EXCLUDE_KEYS = ['password', 'AUTHORIZATION',
+                               'access', 'refresh']
+DRF_API_LOGGER_STATUS_CODES = [400, 401, 403, 404, 500]
