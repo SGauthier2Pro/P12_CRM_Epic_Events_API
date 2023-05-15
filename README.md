@@ -34,8 +34,10 @@ List of technologies used within this project :
 * [django-filter](https://django-filter.readthedocs.io/en/stable/): version 22.1
 * [djangorestframework](https://www.django-rest-framework.org): version 3.14.0
 * [djangorestframework-simplejwt](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/): version 5.2.2
+* [postgreqsl](https://www.postgresql.org/download/windows/): version 15.1
 * [psycopg2](https://www.psycopg.org/docs/): version 2.9.6
 * [pytest](https://docs.pytest.org/en/7.2.x/getting-started.html): version 7.2.2
+* [drf-api-logger](https://pypi.org/project/drf-api-logger/): version 1.1.12 
 * [pytest-django](https://pytest-django.readthedocs.io/en/latest/): version 4.5.2
 * [pytest-reverse](https://pypi.org/project/pytest-reverse/): version 1.5.0
 * [flake8](https://pypi.org/project/flake8/): Version 4.0.0
