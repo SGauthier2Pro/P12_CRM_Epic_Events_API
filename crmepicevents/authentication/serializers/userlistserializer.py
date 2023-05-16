@@ -16,15 +16,15 @@ class UserListSerializer(UserBaseSerializer):
         model = User
         fields = [
             'id',
-            'username',
             'first_name',
             'last_name',
+            'email',
             'groups'
         ]
         read_only_fields = [
             'id',
-            'username',
             'first_name',
             'last_name',
+            'email',
             'groups'
         ]
