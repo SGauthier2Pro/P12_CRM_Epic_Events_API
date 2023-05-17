@@ -60,26 +60,32 @@ class ContractViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
         if str(self.request.user.groups.all()[0]) == "SALES" or \
                 str(self.request.user.groups.all()[0]) == "MANAGER":
             if 'client' in request.data:
-                client = Client.objects.get(
-                    pk=request.data['client']
-                )
-                serializer = self.get_serializer(data=request.data)
-                serializer.is_valid(raise_exception=True)
-                if client.sales_contact == self.request.user or \
-                        str(self.request.user.groups.all()[0]) == "MANAGER":
-                    serializer.validated_data['client'] = client
-                    self.perform_create(serializer)
-                    headers = self.get_success_headers(serializer.data)
-                    return Response(
-                        serializer.data,
-                        status=status.HTTP_201_CREATED,
-                        headers=headers
+                if Client.objects.filter(pk=request.data['client']):
+                    client = Client.objects.get(
+                        pk=request.data['client']
                     )
+                    serializer = self.get_serializer(data=request.data)
+                    serializer.is_valid(raise_exception=True)
+                    if client.sales_contact == self.request.user or \
+                            str(self.request.user.groups.all()[0]) == "MANAGER":
+                        serializer.validated_data['client'] = client
+                        self.perform_create(serializer)
+                        headers = self.get_success_headers(serializer.data)
+                        return Response(
+                            serializer.data,
+                            status=status.HTTP_201_CREATED,
+                            headers=headers
+                        )
+                    else:
+                        return Response(
+                            {'message': "you are not sales "
+                                        "contact for this client !"},
+                            status=status.HTTP_403_FORBIDDEN
+                        )
                 else:
                     return Response(
-                        {'message': "you are not sales "
-                                    "contact for this client !"},
-                        status=status.HTTP_403_FORBIDDEN
+                        {'client': "This client id doesn't exists !"},
+                        status=status.HTTP_400_BAD_REQUEST
                     )
             else:
                 return Response(
