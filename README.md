@@ -157,7 +157,7 @@ psql -U username --set ON_ERROR_STOP=on -d CRMEEDB -f CRMEEDB_bkp
 ***
 ***
 In order to use the API please refere you to the online documentation at this address:
-under construction
+https://documenter.getpostman.com/view/21154794/2s93m1ZPhJ
 
 ***
 ##Executing tests
