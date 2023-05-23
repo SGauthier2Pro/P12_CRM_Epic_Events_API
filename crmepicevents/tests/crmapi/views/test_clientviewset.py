@@ -593,11 +593,12 @@ class TestClientViewSet:
             self, client, get_datas):
         user = get_datas['user_manager']
         client_test = get_datas['client1']
+        support_user = get_datas['user_support2']
 
         request = self.endpoint + str(client_test.id) + '/'
 
         client_data_to_update = {
-            'sales_contact': '2'
+            'sales_contact': support_user.id
         }
 
         client.credentials(
