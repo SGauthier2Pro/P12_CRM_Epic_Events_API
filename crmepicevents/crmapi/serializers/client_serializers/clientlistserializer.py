@@ -25,4 +25,5 @@ class ClientListSerializer(ClientBaseSerializer):
             'phone',
             'mobile',
             'company_name',
+            'sales_contact'
         ]

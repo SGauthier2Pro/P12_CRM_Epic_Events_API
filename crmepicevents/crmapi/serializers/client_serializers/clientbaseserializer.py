@@ -16,21 +16,21 @@ class ClientBaseSerializer(serializers.ModelSerializer):
         many=True
     )
 
-    def validate_sales_contact(self, attributes):
+    def validate_sales_contact(self, value):
         """
         Check if user belongs to Sales Group
-        :param attributes:
+        :param value:
         :return: attributes if from sales group
         """
 
-        if attributes['sales_contact']:
-            sales_contact = User.objects.get(
-                pk=attributes['sales_contact'].id
-            )
-            if sales_contact.groups.all()[0] != 'SALES':
+        print(value)
+        if value:
+
+            sales_contact = User.objects.get(pk=value.id)
+            if str(sales_contact.groups.all()[0]) != 'SALES':
                 raise serializers.ValidationError(
-                    {"sales contact":
-                        "This employee doesn't belong to Sales group"}
+                    {'sales_contact':
+                        "This employee does not belong to Sales group"}
                 )
-            return attributes['sales_contact']
+            return value
 

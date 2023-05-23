@@ -589,6 +589,34 @@ class TestClientViewSet:
         assert expected_content in content
 
     @pytest.mark.django_db
+    def test_update_clients_with_wrong_sales_contact(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+        client_test = get_datas['client1']
+
+        request = self.endpoint + str(client_test.id) + '/'
+
+        client_data_to_update = {
+            'sales_contact': '2'
+        }
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+
+        response = client.put(
+            request,
+            data=client_data_to_update,
+            format='json'
+        )
+
+        content = response.content.decode()
+        expected_content = '{"sales_contact":{"sales_contact":' \
+                           '"This employee does not belong to Sales group"}}'
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert expected_content in content
+
+    @pytest.mark.django_db
     def test_update_clients_with_bad_client_id(
             self, client, get_datas):
         user = get_datas['user_manager']
