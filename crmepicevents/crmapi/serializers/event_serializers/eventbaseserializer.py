@@ -80,7 +80,7 @@ class EventBaseSerializer(serializers.ModelSerializer):
         # Update
         if self.instance and value:
             if value.strftime("%d-%m-%Y") == '01-01-1900':
-                return self.instance.payment_due
+                return self.instance.event_date
 
             if value.strftime("%d-%m-%Y") != '01-01-1900' and value < date_now:
                 raise serializers.ValidationError(
@@ -88,7 +88,8 @@ class EventBaseSerializer(serializers.ModelSerializer):
         # create
         elif not self.instance and value:
             if value.strftime("%d-%m-%Y") == '01-01-1900':
-                return None
+                raise serializers.ValidationError(
+                    "event_date : You must enter a date for the event.")
 
             if value.strftime("%d-%m-%Y") != '01-01-1900' and value < date_now:
                 raise serializers.ValidationError(

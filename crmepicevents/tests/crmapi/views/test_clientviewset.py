@@ -618,7 +618,35 @@ class TestClientViewSet:
         assert expected_content in content
 
     @pytest.mark.django_db
-    def test_update_clients_with_bad_client_id(
+    def test_update_clients_with_good_sales_contact(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+        client_test = get_datas['client1']
+        sales_user = get_datas['user_sales']
+
+        request = self.endpoint + str(client_test.id) + '/'
+
+        client_data_to_update = {
+            'sales_contact': sales_user.id
+        }
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+
+        response = client.put(
+            request,
+            data=client_data_to_update,
+            format='json'
+        )
+
+        content = response.content.decode()
+        expected_content = '"sales_contact":' + str(sales_user.id)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert expected_content in content
+
+    @pytest.mark.django_db
+    def test_update_clients_with_not_existing_client_id(
             self, client, get_datas):
         user = get_datas['user_manager']
 
@@ -638,6 +666,28 @@ class TestClientViewSet:
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.django_db
+    def test_update_clients_with_bad_client_id_type(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+
+        request = self.endpoint + 'hf/'
+
+        client_data_to_update = {
+            'mobile': '0698754123'
+        }
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+
+        response = client.put(
+            request,
+            data=client_data_to_update,
+            format='json'
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     # DELETE /clients/{pk}/
 
@@ -723,7 +773,7 @@ class TestClientViewSet:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.django_db
-    def test_delete_clients_with_bad_client_id(
+    def test_delete_clients_with_not_existing_client_id(
             self, client, get_datas):
         user = get_datas['user_manager']
 
@@ -737,3 +787,19 @@ class TestClientViewSet:
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.django_db
+    def test_delete_clients_with_bad_client_id_type(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+
+        request = self.endpoint + 'hf/'
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+
+        response = client.delete(
+            request
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST

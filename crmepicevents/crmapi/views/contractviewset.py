@@ -84,7 +84,7 @@ class ContractViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
                         )
                 else:
                     return Response(
-                        {'client': "This client id doesn't exists !"},
+                        {'client': "This client id does not exists !"},
                         status=status.HTTP_400_BAD_REQUEST
                     )
             else:
@@ -102,35 +102,41 @@ class ContractViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
         serializer.save()
 
     def update(self, request, *args, **kwargs):
-        if Contract.objects.filter(id=self.kwargs['pk']):
-            instance = self.get_object()
-            serializer = self.get_serializer(
-                instance,
-                data=request.data,
-                partial=True
-            )
-            sales_contact = instance.client.sales_contact
-            if (str(self.request.user.groups.all()[0]) == "SALES"
-                and sales_contact == self.request.user) \
-                    or str(self.request.user.groups.all()[0]) == "MANAGER":
-                serializer.is_valid(raise_exception=True)
-                self.perform_update(serializer)
-                headers = self.get_success_headers(
-                    serializer.validated_data
+        if self.kwargs['pk'].isdigit():
+            if Contract.objects.filter(id=self.kwargs['pk']):
+                instance = self.get_object()
+                serializer = self.get_serializer(
+                    instance,
+                    data=request.data,
+                    partial=True
                 )
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_200_OK,
-                    headers=headers
-                )
+                sales_contact = instance.client.sales_contact
+                if (str(self.request.user.groups.all()[0]) == "SALES"
+                    and sales_contact == self.request.user) \
+                        or str(self.request.user.groups.all()[0]) == "MANAGER":
+                    serializer.is_valid(raise_exception=True)
+                    self.perform_update(serializer)
+                    headers = self.get_success_headers(
+                        serializer.validated_data
+                    )
+                    return Response(
+                        serializer.data,
+                        status=status.HTTP_200_OK,
+                        headers=headers
+                    )
+                else:
+                    return Response({'message': "you are not authorized "
+                                                "to do this action"},
+                                    status=status.HTTP_403_FORBIDDEN)
             else:
-                return Response({'message': "you are not authorized "
-                                            "to do this action"},
-                                status=status.HTTP_403_FORBIDDEN)
+                return Response(
+                    {'message': "This contract id does not exists"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
         else:
             return Response(
-                {'message': "This contract id doesn't exists"},
-                status=status.HTTP_404_NOT_FOUND
+                {'message': "This contract id is not a valid id"},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
     def perform_update(self, serializer):
@@ -138,16 +144,22 @@ class ContractViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         if str(self.request.user.groups.all()[0]) == 'MANAGER':
-            if Contract.objects.filter(id=self.kwargs['pk']):
-                instance = self.get_object()
-                self.perform_destroy(instance)
-                return Response(
-                    {'success': "The contract has been deleted"},
-                    status=status.HTTP_200_OK)
+            if self.kwargs['pk'].isdigit():
+                if Contract.objects.filter(id=self.kwargs['pk']):
+                    instance = self.get_object()
+                    self.perform_destroy(instance)
+                    return Response(
+                        {'success': "The contract has been deleted"},
+                        status=status.HTTP_200_OK)
+                else:
+                    return Response(
+                        {'message': "This contract id does not exists"},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
             else:
                 return Response(
-                    {'message': "This contract id doesn't exists"},
-                    status=status.HTTP_404_NOT_FOUND
+                    {'message': "This contract id is not a valid id"},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
         else:
             return Response({'message': "you are not authorized "

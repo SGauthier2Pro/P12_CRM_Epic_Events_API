@@ -1,5 +1,6 @@
 import pytest
 from rest_framework import status
+import datetime
 
 
 class TestContractViewSet:
@@ -295,6 +296,34 @@ class TestContractViewSet:
         assert response.status_code == status.HTTP_201_CREATED
 
     @pytest.mark.django_db
+    def test_create_contracts_with_not_sales_contact_client(
+            self, client, get_datas):
+        user = get_datas['user_sales2']
+        client_test = get_datas['client2']
+
+        contract_data = {
+            'client': client_test.id,
+            'amount': '400.0',
+            'payment_due': '29-03-2025'
+        }
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+
+        response = client.post(
+            self.endpoint,
+            data=contract_data,
+            format='json'
+        )
+
+        content = response.content.decode()
+        expected_content = '"message":' \
+                           '"you are not sales contact for this client !"'
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert expected_content in content
+
+    @pytest.mark.django_db
     def test_create_contracts_with_support_credentials(
             self, client, get_datas):
         user = get_datas['user_support']
@@ -365,6 +394,87 @@ class TestContractViewSet:
 
         content = response.content.decode()
         expected_content = '"client":"This field is needed !"'
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert expected_content in content
+
+    @pytest.mark.django_db
+    def test_create_contracts_with_not_existing_client_id(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+
+        contract_data = {
+            'client': 654654654,
+            'amount': '400.0',
+            'payment_due': '29-03-2025'
+        }
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+
+        response = client.post(
+            self.endpoint,
+            data=contract_data,
+            format='json'
+        )
+
+        content = response.content.decode()
+        expected_content = '"client":"This client id does not exists !"'
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert expected_content in content
+
+    @pytest.mark.django_db
+    def test_create_contracts_without_payment_due(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+        client_test = get_datas['client2']
+
+        contract_data = {
+            'client': client_test.id,
+            'amount': '400.0',
+            'payment_due': '01-01-1900'
+        }
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+
+        response = client.post(
+            self.endpoint,
+            data=contract_data,
+            format='json'
+        )
+
+        content = response.content.decode()
+        expected_content = '"payment_due":null'
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert expected_content in content
+
+    @pytest.mark.django_db
+    def test_create_contracts_with_payment_due_older_than_now(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+        client_test = get_datas['client2']
+
+        contract_data = {
+            'client': client_test.id,
+            'amount': '400.0',
+            'payment_due': '01-09-2022'
+        }
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+
+        response = client.post(
+            self.endpoint,
+            data=contract_data,
+            format='json'
+        )
+
+        content = response.content.decode()
+        expected_content = '"payment_due : ' \
+                           'You can not choose an older date than now."'
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert expected_content in content
@@ -514,6 +624,86 @@ class TestContractViewSet:
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
+    @pytest.mark.django_db
+    def test_update_contracts_with_bad_contract_id_type(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+
+        request = self.endpoint + 'hf/'
+
+        contract_data_to_update = {
+            'status': 'True'
+        }
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+
+        response = client.put(
+            request,
+            data=contract_data_to_update,
+            format='json'
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.django_db
+    def test_update_contracts_with_default_payment_due(
+            self, client, get_datas):
+        user = get_datas['user_sales']
+        contract_test = get_datas['contract1']
+
+        request = self.endpoint + str(contract_test.id) + '/'
+
+        contract_data_to_update = {
+            'payment_due': '01-01-1900'
+        }
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+
+        response = client.put(
+            request,
+            data=contract_data_to_update,
+            format='json'
+        )
+
+        date_to_test = datetime.datetime.strptime(
+            contract_test.payment_due, '%Y-%m-%d')
+        content = response.content.decode()
+        expected_content = '"payment_due":"' + \
+                           date_to_test.strftime('%d-%m-%Y') + '"'
+
+        assert response.status_code == status.HTTP_200_OK
+        assert expected_content in content
+
+    @pytest.mark.django_db
+    def test_update_contracts_with_payment_due_older_than_now(
+            self, client, get_datas):
+        user = get_datas['user_sales']
+        contract_test = get_datas['contract1']
+
+        request = self.endpoint + str(contract_test.id) + '/'
+
+        contract_data_to_update = {
+            'payment_due': '01-01-2022'
+        }
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+
+        response = client.put(
+            request,
+            data=contract_data_to_update,
+            format='json'
+        )
+
+        content = response.content.decode()
+        expected_content = '"payment_due : ' \
+                           'You can not choose an older date than now."'
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert expected_content in content
+
     # DELETE /contracts/{pk}
     @pytest.mark.django_db
     def test_delete_contracts_with_manager_credentials(
@@ -597,7 +787,7 @@ class TestContractViewSet:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.django_db
-    def test_delete_contracts_with_bad_contract_id(
+    def test_delete_contracts_with_not_existing_contract_id(
             self, client, get_datas):
         user = get_datas['user_manager']
 
@@ -611,3 +801,19 @@ class TestContractViewSet:
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.django_db
+    def test_delete_contracts_with_bad_contract_id_type(
+            self, client, get_datas):
+        user = get_datas['user_manager']
+
+        request = self.endpoint + 'hf/'
+
+        client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.get_token(client, user))
+
+        response = client.delete(
+            request
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
