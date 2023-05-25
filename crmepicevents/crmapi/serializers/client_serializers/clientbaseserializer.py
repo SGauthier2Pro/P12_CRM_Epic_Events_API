@@ -33,4 +33,3 @@ class ClientBaseSerializer(serializers.ModelSerializer):
                         "This employee does not belong to Sales group"}
                 )
             return value
-

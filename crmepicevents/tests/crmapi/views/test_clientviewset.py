@@ -378,7 +378,7 @@ class TestClientViewSet:
         assert expected_content in content
 
     @pytest.mark.django_db
-    def test_create_clients_without_good_phone(
+    def test_create_clients_without_good_mobile(
             self, client, get_datas):
         user = get_datas['user_manager']
 
@@ -386,7 +386,7 @@ class TestClientViewSet:
             'first_name': 'client',
             'last_name': '4',
             'email': 'client4@client4.net',
-            'phone': '012"456789',
+            'phone': '0123456789',
             'mobile': '062345978',
             'company_name': 'Client4 Corp'
         }

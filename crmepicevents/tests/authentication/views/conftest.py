@@ -2,7 +2,6 @@ import pytest
 from rest_framework.test import APIClient
 
 from django.contrib.auth.models import User, Group
-from django.contrib.auth.hashers import make_password
 
 
 @pytest.fixture
@@ -50,4 +49,3 @@ def get_sales_user():
     group = Group.objects.get(name='SALES')
     group.user_set.add(user)
     return user
-

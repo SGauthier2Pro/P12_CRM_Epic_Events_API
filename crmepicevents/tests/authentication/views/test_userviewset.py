@@ -1,5 +1,3 @@
-from django.urls import resolve, reverse
-
 import pytest
 from rest_framework import status
 

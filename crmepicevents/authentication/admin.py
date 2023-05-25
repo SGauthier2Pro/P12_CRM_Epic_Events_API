@@ -26,4 +26,3 @@ UserAdmin.list_display = (
     'last_login',
     'group'
 )
-

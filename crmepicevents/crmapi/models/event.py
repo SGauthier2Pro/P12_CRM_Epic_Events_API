@@ -56,4 +56,3 @@ class Event(models.Model):
         verbose_name='Notes',
         blank=True
     )
-

@@ -68,4 +68,3 @@ class Client(models.Model):
         verbose_name='Confirmed client ?',
         default=False
     )
-

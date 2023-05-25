@@ -40,6 +40,3 @@ class EventDetailSerializer(EventBaseSerializer):
         queryset = User.objects.filter(pk=instance.support_contact.id)
         serializer = UserListSerializer(queryset, many=True)
         return serializer.data
-
-
-

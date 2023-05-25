@@ -24,4 +24,3 @@ def test_users_url():
     url = reverse('users-list')
     assert resolve(url).view_name == 'users-list'
     assert resolve(url).func, UserViewSet
-

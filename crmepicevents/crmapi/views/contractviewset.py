@@ -66,8 +66,8 @@ class ContractViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
                     )
                     serializer = self.get_serializer(data=request.data)
                     serializer.is_valid(raise_exception=True)
-                    if client.sales_contact == self.request.user or \
-                            str(self.request.user.groups.all()[0]) == "MANAGER":
+                    if client.sales_contact == self.request.user or str(
+                            self.request.user.groups.all()[0]) == "MANAGER":
                         serializer.validated_data['client'] = client
                         self.perform_create(serializer)
                         headers = self.get_success_headers(serializer.data)

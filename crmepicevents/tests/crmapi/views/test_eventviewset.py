@@ -693,7 +693,7 @@ class TestEventViewSet:
         assert expected_content in content
 
     @pytest.mark.django_db
-    def test_update_events_with_client_not_sales_contact_credentials(
+    def test_update_events_with_no_credentials(
             self, client, get_datas):
         event_test = get_datas['event1']
 

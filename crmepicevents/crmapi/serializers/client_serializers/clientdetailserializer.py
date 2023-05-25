@@ -31,4 +31,3 @@ class ClientDetailSerializer(ClientBaseSerializer):
             'sales_contact',
             'contracts'
         ]
-

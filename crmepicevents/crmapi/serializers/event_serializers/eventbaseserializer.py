@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import date
 
 from rest_framework import serializers
 from rest_framework.serializers import SerializerMethodField
@@ -29,7 +29,7 @@ class EventBaseSerializer(serializers.ModelSerializer):
         input_formats=['%d-%m-%Y', 'iso-8601']
     )
 
-    #misc fields
+    # misc fields
 
     event_client = SerializerMethodField()
     event_client_id = SerializerMethodField()

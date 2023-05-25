@@ -7,7 +7,6 @@ serializer class for Event model
 
 
 from rest_framework import serializers
-from rest_framework.serializers import SerializerMethodField
 
 from .eventbaseserializer import EventBaseSerializer
 

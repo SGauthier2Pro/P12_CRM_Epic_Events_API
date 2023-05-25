@@ -27,4 +27,3 @@ class ContractListSerializer(ContractBaseSerializer):
             'amount',
             'payment_due'
         ]
-
