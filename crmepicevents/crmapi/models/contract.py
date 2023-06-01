@@ -35,7 +35,8 @@ class Contract(models.Model):
         related_name='contract_event',
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
+        unique=True
     )
     amount = models.FloatField(
         verbose_name='Amount',
