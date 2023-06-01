@@ -29,7 +29,7 @@ class Contract(models.Model):
         verbose_name='Signed ?',
         default=False
     )
-    event = models.ForeignKey(
+    event = models.OneToOneField(
         'crmapi.Event',
         verbose_name='Event',
         related_name='contract_event',
