@@ -97,7 +97,7 @@ class TestEventViewSet:
         response = client.get(request)
 
         content = response.content.decode()
-        print(content)
+
         expected_content = '"event_client_id":' + str(client_test.id)
 
         assert response.status_code == status.HTTP_200_OK

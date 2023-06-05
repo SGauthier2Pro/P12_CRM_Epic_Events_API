@@ -43,15 +43,16 @@ class EventViewSet(MultipleSerializerMixin, viewsets.ModelViewSet):
         if company_name:
             queryset = queryset.filter(
                 id__in=Contract.objects.filter(
-                    client__company_name=company_name)
+                    client__company_name=company_name).values('event')
             )
 
-        client_email = self.request.GET.get('client_email')
+        client_email = self.request.GET.get('email')
         if client_email:
             queryset = queryset.filter(
                 id__in=Contract.objects.filter(
-                    client__email=client_email)
+                    client__email=client_email).values('event')
             )
+
         event_date_to_test = self.request.GET.get('event_date')
         if event_date_to_test:
             event_date = datetime.datetime.strptime(
